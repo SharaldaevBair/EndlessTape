@@ -1,17 +1,19 @@
 import UIKit
 
 final class SplashViewController: UIViewController, AuthViewControllerDelegate {
-    private let ShowAuthenticationScreenSegueIdentifier = "ShowAuthenticationScreen"
-    private let oauth2Service = OAuth2Services()
-    private let oauth2TokenStorage = OAuth2TokenStorage()
+    private let showAuthenticationScreenSegueIdentifier = "ShowAuthenticationScreen"
+    private let oauth2Service = OAuth2Services.sharedServices
+    private let oauth2TokenStorage = OAuth2TokenStorage.sharedTokenStorage
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        if let token = oauth2TokenStorage.token {
+        if let _ = oauth2TokenStorage.token {
+            /// Если токен сохранен, значит пользователь уже авторизован. Можно перенаправить на экран галереи-таблицы
             switchToTabBarController()
         } else {
-            performSegue(withIdentifier: ShowAuthenticationScreenSegueIdentifier, sender: nil)
+            performSegue(withIdentifier: showAuthenticationScreenSegueIdentifier, sender: nil)
+            /// Если токен не сохранен, значит пользователь не был ранее авторизован. Можно перенаправить на экран авторизации
         }
     }
     
@@ -26,7 +28,9 @@ final class SplashViewController: UIViewController, AuthViewControllerDelegate {
     
     func switchToTabBarController() {
         // Получаем экземпляр `Window` приложения
-        guard let window = UIApplication.shared.windows.first else { fatalError("Invalid Configuration") }
+        guard let window = UIApplication.shared.windows.first else { assertionFailure("Invalid Configuration")
+            return
+        }
         
         // Cоздаём экземпляр нужного контроллера из Storyboard с помощью ранее заданного идентификатора.
         let tabBarController = UIStoryboard(name: "Main", bundle: .main)
@@ -40,13 +44,15 @@ final class SplashViewController: UIViewController, AuthViewControllerDelegate {
 extension SplashViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Проверим, что переходим на авторизацию
-        if segue.identifier == ShowAuthenticationScreenSegueIdentifier {
+        if segue.identifier == showAuthenticationScreenSegueIdentifier {
             
-            // Доберёмся до первого контроллера в навигации. Мы помним, что в программировании отсчёт начинается с 0?
+            // Доберёмся до первого контроллера в навигации
             guard
                 let navigationController = segue.destination as? UINavigationController,
                 let viewController = navigationController.viewControllers[0] as? AuthViewController
-            else { fatalError("Failed to prepare for \(ShowAuthenticationScreenSegueIdentifier)") }
+            else { assertionFailure("Failed to prepare for \(showAuthenticationScreenSegueIdentifier)")
+                return
+            }
             
             // Установим делегатом контроллера наш SplashViewController
             viewController.delegate = self
