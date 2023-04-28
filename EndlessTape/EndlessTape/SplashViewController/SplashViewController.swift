@@ -49,7 +49,7 @@ extension SplashViewController {
             // Доберёмся до первого контроллера в навигации
             guard
                 let navigationController = segue.destination as? UINavigationController,
-                let viewController = navigationController.viewControllers[0] as? AuthViewController
+                let viewController = navigationController.viewControllers.first as? AuthViewController
             else { assertionFailure("Failed to prepare for \(showAuthenticationScreenSegueIdentifier)")
                 return
             }

@@ -1,7 +1,6 @@
 import UIKit
 
 final class OAuth2Services {
-    
     static let sharedServices = OAuth2Services()//Создание экземпляра класса OAuth2Services в виде синглтона (Singleton), что означает, что всегда будет существовать только один экземпляр этого класса в приложении.
     private init() {}
     
