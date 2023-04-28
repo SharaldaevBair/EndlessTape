@@ -16,6 +16,10 @@ final class ProfileViewController: UIViewController {
         descriptionLabelView(safeArea: view.safeAreaLayoutGuide)
         logoutButtonView(safeArea: view.safeAreaLayoutGuide)
     }
+    
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .lightContent
+    }
     //MARK: - Private func
     private func avatarImageView(safeArea: UILayoutGuide) {
         avatarImage = UIImageView()

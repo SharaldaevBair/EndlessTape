@@ -1,10 +1,3 @@
-//
-//  SceneDelegate.swift
-//  EndlessTape
-//
-//  Created by Баир Шаралдаев on 23.03.2023.
-//
-
 import UIKit
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
