@@ -1,4 +1,5 @@
 import UIKit
+import Kingfisher
 
 final class ProfileViewController: UIViewController {
     private var avatarImage: UIImageView!
@@ -6,6 +7,12 @@ final class ProfileViewController: UIViewController {
     private var loginNameLabel: UILabel!
     private var descriptionLabel: UILabel!
     private var logoutButton: UIButton!
+    private let profileService = ProfileService.shared
+    private var profileImageServiceObserver: NSObjectProtocol? //Объявляем проперти для хранения обсервера (нужен для управления жизненным циклом), возвращаемого «новым» API.
+    
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .lightContent
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -15,18 +22,45 @@ final class ProfileViewController: UIViewController {
         loginNameLabelView(safeArea: view.safeAreaLayoutGuide)
         descriptionLabelView(safeArea: view.safeAreaLayoutGuide)
         logoutButtonView(safeArea: view.safeAreaLayoutGuide)
+
+        profileImageServiceObserver = NotificationCenter.default // Присваиваем в profileImageServiceObserver обсервер, возвращаемый функцией addObserver («новым» API).
+
+            .addObserver(
+                forName: ProfileImageService.DidChangeNotification, //Имя уведомления — ProfileImageService.DidChangeNotification.
+                
+                object: nil, //Мы передаём nil в параметр object, так как хотим получать уведомления от любых источников.
+                
+                queue: .main //Очередь, на которой мы хотим получать уведомления. Мы указываем здесь главную очередь (main queue), так как в обработчике нотификации будем обновлять UI, что можно сделать только из главной очереди.
+            ) { [weak self] _ in
+                guard let self = self else { return }
+                self.updateAvatar() //Вызываем функцию для обновления аватарки.
+
+            }
+        updateAvatar() //Добавленный нами обсервер будет получать нотификации после момента добавления, но может так случиться, что запрос на получение аватарки уже успел завершиться. Поэтому в viewDidLoad мы также пытаемся обновить аватарку.
     }
     
-    override var preferredStatusBarStyle: UIStatusBarStyle {
-        return .lightContent
+    private func updateProfileDetails(with profile: Profile?) {
+        guard let profile = profile else { return }
+        self.nameLabel.text = profile.name
+        self.loginNameLabel.text = profile.loginName
+        self.descriptionLabel.text = profile.bio
     }
-    //MARK: - Private func
+    
+    private func updateAvatar() {
+        guard
+            let profileImageURL = ProfileImageService.shared.avatarURL,
+            let url = URL(string: profileImageURL)
+        else { return }
+        
+        avatarImage.kf.setImage(with: url)
+    }
+    //MARK: - Верстка кодом
     private func avatarImageView(safeArea: UILayoutGuide) {
         avatarImage = UIImageView()
         avatarImage.image = UIImage(named: "Photo")
         avatarImage.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(avatarImage)
-        
+
         avatarImage.widthAnchor.constraint(equalToConstant: 70).isActive = true
         avatarImage.heightAnchor.constraint(equalToConstant: 70).isActive = true
         avatarImage.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16).isActive = true

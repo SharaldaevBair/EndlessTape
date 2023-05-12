@@ -1,19 +1,26 @@
-import UIKit
+import Foundation
+import SwiftKeychainWrapper
 
-final class OAuth2TokenStorage {
-    //Cоздаем класс OAuth2TokenStorage и определяем его как синглтон с помощью статической переменной sharedTokenStorage.
+final class OAuth2TokenStorage { //Cоздаем класс OAuth2TokenStorage и определяем его как синглтон с помощью статической переменной sharedTokenStorage.
+    
     static let sharedTokenStorage = OAuth2TokenStorage()
-    //Также создаем константу tokenKey для определения ключа, используемого для сохранения токена в User Defaults.
-    private let tokenKey = "BearerToken"
+    private let keyChainStorage = KeychainWrapper.standard
     //  Вычислимое свойство token определяет переопределенные геттер и сеттер. Геттер возвращает значение из User Defaults, используя ключ "BearerToken". Сеттер сохраняет значение в User Defaults, также используя этот ключ.
     var token: String? {
         get {
-            return UserDefaults.standard.string(forKey: tokenKey)
+            keyChainStorage.string(forKey: .tokenKey)
         }
         set {
-            UserDefaults.standard.set(newValue, forKey: tokenKey)
+            if let token = newValue {
+                keyChainStorage.set(token, forKey: .tokenKey)
+            } else {
+                keyChainStorage.removeObject(forKey: .tokenKey)
+            }
         }
     }
-    //  Инициализатор класса (init) определен как приватный, чтобы предотвратить создание объектов класса за пределами класса. Таким образом, объекты класса можно создавать только через статическую переменную shared.
-    private init() {}
 }
+
+extension String {
+    static let tokenKey = "bearerToken" //Также создаем константу tokenKey для определения ключа, используемого для сохранения токена в User Defaults.
+}
+
