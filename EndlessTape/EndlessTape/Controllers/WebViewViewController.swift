@@ -6,11 +6,11 @@ protocol WebViewViewControllerDelegate: AnyObject {
 }
 
 final class WebViewViewController: UIViewController {
-    let unsplashAuthorizeURLString = UnsplashCredentials.unsplashAuthorizeURLString
-    let accessKey = UnsplashCredentials.accessKey
-    let redirectURI = UnsplashCredentials.redirectURI
-    let accessScope = UnsplashCredentials.accessScope
-    let secretKey = UnsplashCredentials.secretKey
+    let unsplashAuthorizeURLString = Constants.unsplashAuthorizeURLString
+    let accessKey = Constants.accessKey
+    let redirectURI = Constants.redirectURI
+    let accessScope = Constants.accessScope
+    let secretKey = Constants.secretKey
     weak var delegate: WebViewViewControllerDelegate?
     private var estimatedProgressObservation: NSKeyValueObservation?
 
@@ -22,12 +22,12 @@ final class WebViewViewController: UIViewController {
 
         webView.navigationDelegate = self
 
-        var urlComponents = URLComponents(string: unsplashAuthorizeURLString)!
+        var urlComponents = URLComponents(string: Constants.unsplashAuthorizeURLString)!
         urlComponents.queryItems = [
-            URLQueryItem(name: "client_id", value: accessKey),
-            URLQueryItem(name: "redirect_uri", value: redirectURI),
+            URLQueryItem(name: "client_id", value: Constants.accessKey),
+            URLQueryItem(name: "redirect_uri", value: Constants.redirectURI),
             URLQueryItem(name: "response_type", value: "code"),
-            URLQueryItem(name: "scope", value: accessScope)
+            URLQueryItem(name: "scope", value: Constants.accessScope)
         ]
         let url = urlComponents.url!
         let request = URLRequest(url: url)
@@ -35,7 +35,7 @@ final class WebViewViewController: UIViewController {
 
         updateProgress()
     }
-    
+
     @IBAction private func didTapBackButton(_ sender: Any) {
         delegate?.webViewViewControllerDidCancel(self)
     }
@@ -44,7 +44,7 @@ final class WebViewViewController: UIViewController {
         progressView.progress = Float(webView.estimatedProgress)
         progressView.isHidden = fabs(webView.estimatedProgress - 1.0) <= 0.0001
     }
-    
+
     private func webViewObserver() { //Новое API для KVO (на дженериках)
         estimatedProgressObservation = webView.observe(
             \.estimatedProgress,
