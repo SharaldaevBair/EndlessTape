@@ -37,11 +37,12 @@ final class ProfileViewController: UIViewController {
                 self.updateAvatar() //Вызываем функцию для обновления аватарки.
 
             }
+        updateProfileDetails(profile: profileService.profile)
         updateAvatar() //Добавленный нами обсервер будет получать нотификации после момента добавления, но может так случиться, что запрос на получение аватарки уже успел завершиться. Поэтому в viewDidLoad мы также пытаемся обновить аватарку.
     }
     
-    private func updateProfileDetails(with profile: Profile?) {
-        guard let profile = profile else { return }
+    private func updateProfileDetails(profile: Profile?) {
+        guard let profile = profile else {return}
         self.nameLabel.text = profile.name
         self.loginNameLabel.text = profile.loginName
         self.descriptionLabel.text = profile.bio

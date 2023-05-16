@@ -1,7 +1,7 @@
 import UIKit
 
 final class ImagesListViewController: UIViewController {
-    @IBOutlet private var tableView: UITableView!
+    @IBOutlet private weak var tableView: UITableView!
 
     private let photosName: [String] = Array(0..<20).map{ "\($0)" }
     private let showSingleImageSegueIdentifier = "ShowSingleImage"
@@ -80,7 +80,7 @@ extension ImagesListViewController {
         cell.dateLabel.text = dateFormatter.string(from: Date())
 
         let isLiked = indexPath.row % 2 == 0
-        let likeImage = isLiked ? UIImage(named: "No Active On") : UIImage(named: "No Active Off")
+        let likeImage = isLiked ? UIImage(named: "NoActiveOn") : UIImage(named: "NoActiveOff")
         cell.likeButton.setImage(likeImage, for: .normal)
     }
 }

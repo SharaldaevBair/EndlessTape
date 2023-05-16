@@ -7,5 +7,6 @@ struct Constants {
     static let accessScope = "public+read_user+write_likes"
     static let defaultBaseURL = "https://api.unsplash.com/me"
     static let unsplashAuthorizeURLString = "https://unsplash.com/oauth/authorize"
-//    static let baseURLString = "https://unsplash.com"
+    static let baseURLString = "https://unsplash.com"
+    static let defaultApiBaseURLString = "https://api.unsplash.com"
 }

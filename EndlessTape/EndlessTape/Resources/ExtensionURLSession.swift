@@ -1,54 +1,37 @@
 import Foundation
 
-///Работаем с сетевым запросом
-///Перечисление NetworkError, которое может быть использовано для указания ошибок, связанных с сетевыми запросами. В частности, NetworkError может быть связано с ошибками HTTP-запросов (например, неправильный код состояния HTTP), ошибками в URL-запросе или ошибками в URL-сессии.
-
-enum NetworkError: Error {
-    case httpStatusCode(Int)
-    case urlRequestError(Error)
-    case urlSessionError
-}
-
+//Работа с сетевым запросом
 extension URLSession {
-    
-    func objectTask<T: Decodable>(for request: URLRequest, completion: @escaping (Result<T, Error>) -> Void)
-    -> URLSessionTask {
+    func objectTask<T: Decodable>(
+        for request: URLRequest,
+        completion: @escaping (Result<T, Error>) -> Void
+    ) -> URLSessionTask {
         
-        let fulfillCompletion: (Result<T, Error>) -> Void = { result in
+        let task = dataTask(with: request, completionHandler: { (data, response, error) in
             DispatchQueue.main.async {
-                completion(result)
-            }
-        }
-        
-        let task = dataTask(with: request) { data, response, error in
-            if let data = data,
-               let response = response,
-               let statusCode = (response as? HTTPURLResponse)?.statusCode {
-                
-                if 200 ..< 300 ~= statusCode {
-//                    do {
-//                        let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-//                        print(json)
-//                    } catch {
-//                        print("Failed to parse")
-//                    }
-                    
-                    do {
-                        let decoder = JSONDecoder()
-                        let result = try decoder.decode(T.self, from: data)
-                        fulfillCompletion(.success(result))
-                    } catch {
-                        fulfillCompletion(.failure(NetworkError.urlRequestError(error)))
-                    }
-                } else {
-                    fulfillCompletion(.failure(NetworkError.httpStatusCode(statusCode)))
+                if let error = error {
+                    completion(.failure(error))
+                    return
                 }
-            } else if let error = error {
-                fulfillCompletion(.failure(NetworkError.urlRequestError(error)))
-            } else {
-                fulfillCompletion(.failure(NetworkError.urlSessionError))
+                if let response = response as? HTTPURLResponse,
+                   response.statusCode < 200 || response.statusCode > 299 {
+                    completion(.failure(NetworkError.codeError))
+                    return
+                }
+                guard let data = data else { return }
+                
+                do {
+                    let decodedObject = try JSONDecoder().decode(T.self, from: data)
+                    completion(.success(decodedObject))
+                } catch {
+                    completion(.failure(NetworkError.codeError))
+                }
             }
-        }
+        })
         return task
+    }
+    
+    enum NetworkError: Error {
+        case codeError
     }
 }
