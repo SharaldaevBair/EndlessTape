@@ -6,11 +6,6 @@ protocol WebViewViewControllerDelegate: AnyObject {
 }
 
 final class WebViewViewController: UIViewController {
-    let unsplashAuthorizeURLString = Constants.unsplashAuthorizeURLString
-    let accessKey = Constants.accessKey
-    let redirectURI = Constants.redirectURI
-    let accessScope = Constants.accessScope
-    let secretKey = Constants.secretKey
     weak var delegate: WebViewViewControllerDelegate?
     private var estimatedProgressObservation: NSKeyValueObservation?
 
@@ -32,7 +27,6 @@ final class WebViewViewController: UIViewController {
         let url = urlComponents.url!
         let request = URLRequest(url: url)
         webView.load(request)
-
         updateProgress()
     }
 

@@ -84,29 +84,28 @@ extension SplashViewController: AuthViewControllerDelegate {
                 self.switchToTabBarController()
                 self.oAuth2TokenStorage.token = token
                 self.fetchProfile(token)
-            case .failure(let error):
+            case .failure:
                 self.showAlert()
             }
         }
     }
 
     private func fetchProfile(_ token: String) {
-        profileService.fetchProfile(token) {[weak self] result in
+        profileService.fetchProfile(token) { [ weak self ] result in
             DispatchQueue.main.async {
-                guard let self = self else {return}
+                guard let self = self else { return }
+                UIBlockingProgressHUD.dismiss()
                 switch result {
                 case .success (let result):
                     self.profileImageService.fetchProfileImageURL(username: result.username) { _ in }
                     self.switchToTabBarController()
                 case .failure:
                     self.showAlert()
-                    break
                 }
-                UIBlockingProgressHUD.dismiss()
             }
         }
     }
-    
+
     private func showAlert() {
         let alertVC = UIAlertController(
             title: "Что-то пошло не так(",
