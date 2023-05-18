@@ -85,31 +85,35 @@ extension SplashViewController: AuthViewControllerDelegate {
                 self.oAuth2TokenStorage.token = token
                 self.fetchProfile(token)
             case .failure(let error):
-                self.showAlert(with: error)
+                self.showAlert()
             }
         }
     }
 
     private func fetchProfile(_ token: String) {
-        profileService.fetchProfile(token) { [ weak self ] result in
-            guard let self = self else { return }
-            UIBlockingProgressHUD.dismiss()
-            switch result {
-            case .success(let userProfile):
-                self.profileImageService.fetchProfileImageURL(username: userProfile.username, token: token) { _ in }
-                self.switchToTabBarController()
-            case .failure(let error):
-                self.showAlert(with: error)
+        profileService.fetchProfile(token) {[weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self else {return}
+                switch result {
+                case .success (let result):
+                    self.profileImageService.fetchProfileImageURL(username: result.username) { _ in }
+                    self.switchToTabBarController()
+                case .failure:
+                    self.showAlert()
+                    break
+                }
+                UIBlockingProgressHUD.dismiss()
             }
         }
     }
-
-    private func showAlert(with error: Error) {
-        let alert = UIAlertController(
-            title: "Что-то пошло не так",
+    
+    private func showAlert() {
+        let alertVC = UIAlertController(
+            title: "Что-то пошло не так(",
             message: "Не удалось войти в систему",
             preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .cancel))
-        self.present(alert, animated: true, completion: nil)
+        let action = UIAlertAction(title: "Ok", style: .default)
+        alertVC.addAction(action)
+        present(alertVC, animated: true)
     }
 }

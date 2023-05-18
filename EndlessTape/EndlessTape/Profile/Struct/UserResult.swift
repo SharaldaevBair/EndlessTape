@@ -1,9 +1,13 @@
 import Foundation
 
-struct UserResult: Decodable {
+struct UserResult: Codable {
     let profileImage: ProfileImage
-
-    struct ProfileImage: Decodable {
+    
+    enum CodingKeys: String, CodingKey {
+        case profileImage =  "profile_image"
+    }
+    
+    struct ProfileImage: Codable {
         let small: String
     }
 }

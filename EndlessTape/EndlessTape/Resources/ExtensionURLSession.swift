@@ -1,43 +1,40 @@
 import Foundation
 
 //Работа с сетевым запросом
-private enum NetworkError: Error {
+enum NetworkError: Error {
+    case httpStatusCode(Int)
     case urlRequestError(Error)
     case urlSessionError
-    case httpStatusCode(Int)
+    case decodingError
 }
 
 extension URLSession {
-    func objectTask<T: Decodable>(
-        for request: URLRequest,
-        completion: @escaping (Result<T, Error>) -> Void
-    ) -> URLSessionTask {
-        let fulfillCompletionOnMainThread: (Result<T, Error>) -> Void = { result in
+    func objectTask<T:Decodable>(for request: URLRequest, completion: @escaping (Result<T, Error>) -> Void) -> URLSessionTask {
+        let fulfilCompletion: (Result<T, Error>) -> Void = { result in
             DispatchQueue.main.async {
-                completion(result)
+                 completion(result)
             }
         }
-        
-        let task = dataTask(with: request, completionHandler: { data, response, error in
-            if let data = data, let response = response, let statusCode = (response as? HTTPURLResponse)?.statusCode {
-                if 200 ..< 300 ~= statusCode {
+        let task = dataTask(with: request) { data, response, error in
+            if let data = data, let response = response as? HTTPURLResponse {
+                if 200..<300 ~= response.statusCode {
+                    let jsonDecoder = JSONDecoder()
                     do {
-                        let decoder = JSONDecoder()
-                        decoder.keyDecodingStrategy = .convertFromSnakeCase
-                        let result = try decoder.decode(T.self, from: data)
-                        fulfillCompletionOnMainThread(.success(result))
+                        let decodedModel = try jsonDecoder.decode(T.self, from: data)
+                        fulfilCompletion(.success(decodedModel))
                     } catch {
-                        fulfillCompletionOnMainThread(.failure(NetworkError.urlRequestError(error)))
+                        fulfilCompletion(.failure(NetworkError.decodingError))
                     }
                 } else {
-                    fulfillCompletionOnMainThread(.failure(NetworkError.httpStatusCode(statusCode)))
+                    fulfilCompletion(.failure(NetworkError.httpStatusCode(response.statusCode)))
                 }
-            } else if let error = error {
-                fulfillCompletionOnMainThread(.failure(NetworkError.urlRequestError(error)))
+            } else if let error {
+                fulfilCompletion(.failure(NetworkError.urlRequestError(error)))
             } else {
-                fulfillCompletionOnMainThread(.failure(NetworkError.urlSessionError))
+                fulfilCompletion(.failure(NetworkError.urlSessionError))
             }
-        })
+        }
+        task.resume()
         return task
     }
 }

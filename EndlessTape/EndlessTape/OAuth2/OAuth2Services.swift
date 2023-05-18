@@ -20,7 +20,7 @@ final class OAuth2Service {
     }
 
     ///Объявление метода fetchAuthToken для выполнения запроса на получение токена аутентификации.
-    func fetchAuthToken (_ code: String, completion: @escaping (Result<String, Error>) -> Void) {
+    func fetchAuthToken(_ code: String, completion: @escaping (Result<String, Error>) -> Void) {
         assert(Thread.isMainThread) //Проверяем, что код выполняется из главного потока. Для корректности вычислений существенно, чтобы обращение к task и lastCode было из главного потока, иначе случится гонка.
         guard lastCode == code else { return } // Если lastCode != code, то мы должны всё-таки сделать новый запрос.
         taskURL?.cancel() //Старый запрос нужно отменить, но если task == nil, то ничего не будет выполнено, и мы просто пройдём дальше вниз.

@@ -58,6 +58,11 @@ final class ProfileViewController: UIViewController {
     private func avatarImageView(safeArea: UILayoutGuide) {
         avatarImage = UIImageView()
         avatarImage.image = UIImage(named: "Photo")
+        avatarImage.contentMode = .scaleAspectFill
+        avatarImage.clipsToBounds = true
+
+        avatarImage.layer.cornerRadius = 35
+        avatarImage.layer.masksToBounds = true
         avatarImage.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(avatarImage)
 
@@ -66,7 +71,7 @@ final class ProfileViewController: UIViewController {
         avatarImage.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16).isActive = true
         avatarImage.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 32).isActive = true
     }
-    
+
     private func nameLabelView(safeArea: UILayoutGuide) {
         nameLabel = UILabel()
         nameLabel.text = "Екатерина Новикова"
