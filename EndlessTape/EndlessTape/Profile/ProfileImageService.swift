@@ -43,7 +43,7 @@ final class ProfileImageService {
         task.resume()
     }
 
-    func requestProfileImage(username: String, token: String) -> URLRequest {
+    private func requestProfileImage(username: String, token: String) -> URLRequest {
         let unsplashGetProfileImageURLString = Constants.defaultBaseURL + "users/" + username
         guard let url = URL(string: unsplashGetProfileImageURLString)
             else { fatalError("Failed to create URL") }

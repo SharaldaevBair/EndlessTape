@@ -103,6 +103,7 @@ extension SplashViewController: AuthViewControllerDelegate {
             }
         }
     }
+
     private func showAlert(with error: Error) {
         let alert = UIAlertController(
             title: "Что-то пошло не так",

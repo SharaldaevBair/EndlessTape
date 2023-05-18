@@ -1,37 +1,43 @@
 import Foundation
 
 //Работа с сетевым запросом
+private enum NetworkError: Error {
+    case urlRequestError(Error)
+    case urlSessionError
+    case httpStatusCode(Int)
+}
+
 extension URLSession {
     func objectTask<T: Decodable>(
         for request: URLRequest,
         completion: @escaping (Result<T, Error>) -> Void
     ) -> URLSessionTask {
-        
-        let task = dataTask(with: request, completionHandler: { (data, response, error) in
+        let fulfillCompletionOnMainThread: (Result<T, Error>) -> Void = { result in
             DispatchQueue.main.async {
-                if let error = error {
-                    completion(.failure(error))
-                    return
+                completion(result)
+            }
+        }
+        
+        let task = dataTask(with: request, completionHandler: { data, response, error in
+            if let data = data, let response = response, let statusCode = (response as? HTTPURLResponse)?.statusCode {
+                if 200 ..< 300 ~= statusCode {
+                    do {
+                        let decoder = JSONDecoder()
+                        decoder.keyDecodingStrategy = .convertFromSnakeCase
+                        let result = try decoder.decode(T.self, from: data)
+                        fulfillCompletionOnMainThread(.success(result))
+                    } catch {
+                        fulfillCompletionOnMainThread(.failure(NetworkError.urlRequestError(error)))
+                    }
+                } else {
+                    fulfillCompletionOnMainThread(.failure(NetworkError.httpStatusCode(statusCode)))
                 }
-                if let response = response as? HTTPURLResponse,
-                   response.statusCode < 200 || response.statusCode > 299 {
-                    completion(.failure(NetworkError.codeError))
-                    return
-                }
-                guard let data = data else { return }
-                
-                do {
-                    let decodedObject = try JSONDecoder().decode(T.self, from: data)
-                    completion(.success(decodedObject))
-                } catch {
-                    completion(.failure(NetworkError.codeError))
-                }
+            } else if let error = error {
+                fulfillCompletionOnMainThread(.failure(NetworkError.urlRequestError(error)))
+            } else {
+                fulfillCompletionOnMainThread(.failure(NetworkError.urlSessionError))
             }
         })
         return task
-    }
-    
-    enum NetworkError: Error {
-        case codeError
     }
 }

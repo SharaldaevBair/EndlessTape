@@ -9,19 +9,19 @@ final class ProfileService {
     static let shared = ProfileService()
     private var lastCode: String?
 
-
     func fetchProfile(_ token: String, completion: @escaping (Result<Profile, Error>) -> Void) {
         assert(Thread.isMainThread)
-        if lastCode == token {return}
+        if lastCode == token { return }
         task?.cancel()
         lastCode = token
-
+        
         let request = makeRequest(token)
-        let task = urlSession.objectTask(for: request) { [weak self] (result: Result<ProfileResult, Error>)  in
-            guard let self = self else { return }
+        
+        let session = URLSession.shared
+        let task = session.objectTask(for: request) { (result: Result<ProfileResult, Error>) in
             switch result {
-            case .success(let profileResult):
-                self.profile = Profile(result: profileResult)
+            case .success(let responseBody):
+                self.profile = Profile(result: responseBody)
                 guard let profile = self.profile else {return}
                 completion(.success(profile))
                 self.profile = profile
