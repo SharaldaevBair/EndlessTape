@@ -28,6 +28,7 @@ final class WebViewViewController: UIViewController {
         let request = URLRequest(url: url)
         webView.load(request)
         updateProgress()
+        webViewObserver()
     }
 
     @IBAction private func didTapBackButton(_ sender: Any) {
